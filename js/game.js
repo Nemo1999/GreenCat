@@ -111,7 +111,7 @@ class Caterpillar{
     getBox(){
         //console.log(this.x, this.y)
         const wRatio =  (1 + this.x2MovementPattern[this.tick] - this.x1MovementPattern[this.tick])
-        const hRatio = 1 / wRatio;
+        const hRatio = 1 / Math.sqrt(wRatio);
         return {
             x: this.x + this.width * this.scale * this.x1MovementPattern[this.tick],
             y: this.y + this.scale * this.height * (1 - hRatio),
