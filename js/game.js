@@ -33,13 +33,13 @@ async function main(){
     cat = new Caterpillar(freeCat,
          -200 , 400,
          466, 200,
-         5, 20, 0.5,
+         10, 0.5,
         );
 
     cat_old = new Caterpillar_old(freeCat,
          -200 , 200,
          466, 200,
-         5, 20,
+         10, 0.5,
         );
 
     function update(){
@@ -47,57 +47,15 @@ async function main(){
         context.fillStyle = "#41BA41";
         context.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         // update game state
-        gameFrame++;
-        if (gameFrame % 10 == 0){
-            cat.update();
-            cat_old.update();
-        }
+        cat.update();
+        cat_old.update();
+        // draw game state
         cat.draw()
         cat_old.draw()
-        // draw game state
+        // request new frame
         requestAnimationFrame(update);
     }
     update();
-}
-
-
-
-class Caterpillar_old{
-    constructor(image, x, y, width, height, steps, speed, scale=0.5){
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.steps = steps;
-        this.speed = speed;
-        this.scale = scale
-        this.image = image;
-        this.frameX = 0;
-        this.frameY = 0;
-        this.frameCnt = 0;
-        this.tick = 0;
-        this.pattern = [0,1,2,3,4,4,4,3,2,1,0,0]
-        this.speedPattern = [0,0.6,1.4,1.4, 0.6, 0, 0.6,1.4,1.4,0.6 , 0.0, 0.6]
-    }
-    draw(){
-        context.drawImage(this.image,
-        this.frameX, this.frameY,
-        this.width, this.height,
-        this.x, this.y,
-             this.width*this.scale, this.height*this.scale);
-    }
-    move(){
-        this.x += this.width * this.scale * 0.3 / 12;
-        if(this.x > GAME_WIDTH){
-            this.x = -this.width;
-        }
-    }
-    update(){
-        this.move();
-        this.tick = (this.tick + 1) % this.pattern.length;
-        this.frameCnt = this.pattern[this.tick]
-        this.frameY = this.height * this.frameCnt;
-    }
 }
 
 function drawImage(image, box1, box2){
@@ -114,14 +72,23 @@ function fillRect(color, box){
     context.fillRect(box.x, box.y, box.width, box.height);
 }
 
+
+var gameFrame = 0;
+var GAME_HEIGHT
+var GAME_WIDTH
+// runs the async main function 
+main().then(()=>{console.log("main() finished")});
+
+
+
 class Caterpillar{
-    constructor(image, x, y, width, height, steps, speed=20, scale=0.5){
+    constructor(image, x, y, width, height, updateRate=20, scale=0.5){
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.steps = steps;
-        this.speed = speed;
+        this.updateRate = updateRate;
+        this.cnt = 0;
         this.image = image;
         this.frameX = 0;
         this.frameY = 0;
@@ -144,7 +111,7 @@ class Caterpillar{
     getBox(){
         //console.log(this.x, this.y)
         const wRatio =  (1 + this.x2MovementPattern[this.tick] - this.x1MovementPattern[this.tick])
-        const hRatio = 1 // wRatio;
+        const hRatio = 1 / wRatio;
         return {
             x: this.x + this.width * this.scale * this.x1MovementPattern[this.tick],
             y: this.y + this.scale * this.height * (1 - hRatio),
@@ -173,13 +140,59 @@ class Caterpillar{
         }
     }
     update(){
-        this.move();
+        this.cnt++;
+        if(this.cnt % this.updateRate == 0){
+            this.move();
+        }
+        
     }
 }
 
 
-var gameFrame = 0;
-var GAME_HEIGHT
-var GAME_WIDTH
-// runs the async main function 
-main().then(()=>{console.log("main() finished")});
+
+
+
+/*
+Old implementation of caterpillar (without squeezing)
+*/ 
+
+class Caterpillar_old{
+    constructor(image, x, y, width, height, updateRate=20, scale=0.5){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.updateRate = updateRate;
+        this.cnt = 0;
+        this.scale = scale
+        this.image = image;
+        this.frameX = 0;
+        this.frameY = 0;
+        this.frameCnt = 0;
+        this.tick = 0;
+        this.pattern = [0,1,2,3,4,4,4,3,2,1,0,0]
+        this.speedPattern = [0,0.6,1.4,1.4, 0.6, 0, 0.6,1.4,1.4,0.6 , 0.0, 0.6]
+    }
+    draw(){
+        context.drawImage(this.image,
+        this.frameX, this.frameY,
+        this.width, this.height,
+        this.x, this.y,
+             this.width*this.scale, this.height*this.scale);
+    }
+    move(){
+        this.x += this.width * this.scale * 0.3 / 13    ;
+        if(this.x > GAME_WIDTH){
+            this.x = -this.width * this.scale;
+        }
+    }
+    update(){
+        this.cnt++;
+        if(this.cnt % this.updateRate == 0){
+            this.move();
+            this.tick = (this.tick + 1) % this.pattern.length;
+            this.frameCnt = this.pattern[this.tick]
+            this.frameY = this.height * this.frameCnt;
+        }
+    }
+}
