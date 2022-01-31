@@ -31,9 +31,15 @@ async function main(){
     context.drawImage(freeCat, 0, 0);
 
     cat = new Caterpillar(freeCat,
-         -200, 400,
+         -200 , 400,
          466, 200,
-         5, 10,
+         5, 20, 0.5,
+        );
+
+    cat_old = new Caterpillar_old(freeCat,
+         -200 , 200,
+         466, 200,
+         5, 20,
         );
 
     function update(){
@@ -44,9 +50,10 @@ async function main(){
         gameFrame++;
         if (gameFrame % 10 == 0){
             cat.update();
-            
+            cat_old.update();
         }
         cat.draw()
+        cat_old.draw()
         // draw game state
         requestAnimationFrame(update);
     }
@@ -54,14 +61,16 @@ async function main(){
 }
 
 
-class Caterpillar{
-    constructor(image, x, y, width, height, steps, speed){
+
+class Caterpillar_old{
+    constructor(image, x, y, width, height, steps, speed, scale=0.5){
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.steps = steps;
         this.speed = speed;
+        this.scale = scale
         this.image = image;
         this.frameX = 0;
         this.frameY = 0;
@@ -75,10 +84,10 @@ class Caterpillar{
         this.frameX, this.frameY,
         this.width, this.height,
         this.x, this.y,
-             this.width, this.height);
+             this.width*this.scale, this.height*this.scale);
     }
     move(){
-        this.x += this.speed * this.speedPattern[this.tick];
+        this.x += this.width * this.scale * 0.3 / 12;
         if(this.x > GAME_WIDTH){
             this.x = -this.width;
         }
@@ -88,6 +97,83 @@ class Caterpillar{
         this.tick = (this.tick + 1) % this.pattern.length;
         this.frameCnt = this.pattern[this.tick]
         this.frameY = this.height * this.frameCnt;
+    }
+}
+
+function drawImage(image, box1, box2){
+    context.drawImage(image,
+        box1.x, box1.y,
+        box1.width, box1.height,
+        box2.x, box2.y,
+        box2.width, box2.height
+        );
+}
+
+function fillRect(color, box){
+    context.fillStyle = color;
+    context.fillRect(box.x, box.y, box.width, box.height);
+}
+
+class Caterpillar{
+    constructor(image, x, y, width, height, steps, speed=20, scale=0.5){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.steps = steps;
+        this.speed = speed;
+        this.image = image;
+        this.frameX = 0;
+        this.frameY = 0;
+        this.frameCnt = 0;
+        this.tick = 0;
+        this.framePattern = [0,1,2,3,4,4,4,3,2,1,0,0]
+        this.x1MovementPattern = [0.0, 0.1, 0.2, 0.25, 0.30, 0.30 , 0.30, 0.30, 0.30, 0.30, 0.30, 0.30]
+        this.x2MovementPattern = [-0.05, 0.0, 0.0, 0.05, 0.05, 0.05, 0.05, 0.15, 0.20, 0.25, 0.30, 0.30]
+        this.scale = scale
+    }
+    getSourceBox(){
+        return {
+            x: this.frameX,
+            y: this.frameY,
+            width: this.width,
+            height: this.height
+        }
+    }
+
+    getBox(){
+        //console.log(this.x, this.y)
+        const wRatio =  (1 + this.x2MovementPattern[this.tick] - this.x1MovementPattern[this.tick])
+        const hRatio = 1 // wRatio;
+        return {
+            x: this.x + this.width * this.scale * this.x1MovementPattern[this.tick],
+            y: this.y + this.scale * this.height * (1 - hRatio),
+            width: this.scale * this.width * wRatio,
+            height: this.scale * this.height * hRatio
+        }
+    }
+
+    draw(){
+        drawImage(this.image, this.getSourceBox(), this.getBox());
+        //fillRect("#414141", this.getBox());
+    }
+
+    move(){
+        if(this.tick < this.framePattern.length - 1){
+            this.tick++;
+        }
+        else{
+            this.x += this.width * this.scale * this.x1MovementPattern[this.tick];
+            this.tick = 0;
+        }
+        this.frameY = this.height * this.framePattern[this.tick]
+
+        if(this.x > GAME_WIDTH){
+            this.x = -this.width*this.scale;
+        }
+    }
+    update(){
+        this.move();
     }
 }
 
