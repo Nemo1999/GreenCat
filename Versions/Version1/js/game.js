@@ -38,7 +38,7 @@ async function main(){
 
     function update(){
         context.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        context.fillStyle = "#41BA41";
+        context.fillStyle = "#BA4141";
         context.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         // update game state
         gameFrame++;
