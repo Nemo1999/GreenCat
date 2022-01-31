@@ -67,7 +67,8 @@ class Caterpillar{
         this.frameY = 0;
         this.frameCnt = 0;
         this.tick = 0;
-        this.pattern = [0,1,2,3,4,4,3,2,1,0]
+        this.pattern = [0,1,2,3,4,4,4,3,2,1,0,0]
+        this.speedPattern = [0,0.6,1.4,1.4, 0.6, 0, 0.6,1.4,1.4,0.6 , 0.0, 0.6]
     }
     draw(){
         context.drawImage(this.image,
@@ -77,7 +78,7 @@ class Caterpillar{
              this.width, this.height);
     }
     move(){
-        this.x += this.speed;
+        this.x += this.speed * this.speedPattern[this.tick];
         if(this.x > GAME_WIDTH){
             this.x = -this.width;
         }
