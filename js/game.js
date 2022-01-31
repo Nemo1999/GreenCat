@@ -25,8 +25,8 @@ async function loadImage(src){
 // main function 
 async function main(){
     var [canvas, context] = await getCanvas();
-    GAME_WIDTH = canvas.width = 800;
-    GAME_HEIGHT = canvas.height = 600;
+    GAME_WIDTH = canvas.width = window.innerWidth*0.6;
+    GAME_HEIGHT = canvas.height = window.innerHeight*0.8;
     const freeCat = await loadImage("Assets/Caterpillars/Free.png");
     context.drawImage(freeCat, 0, 0);
 
